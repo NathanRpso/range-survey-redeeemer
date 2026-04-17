@@ -5,6 +5,7 @@ import { ClaimSchema } from '@/lib/validation'
 import { getValidClaimCodes, EXPIRY_DAYS } from '@/lib/config'
 import { normalizeContact } from '@/lib/normalize'
 import { generateShortCode } from '@/lib/codes'
+import type { RedemptionPass } from '@/types'
 
 export type ClaimResult =
   | { success: true; shortCode: string }
@@ -44,11 +45,11 @@ export async function createRedemptionPass(
   const supabase = createServerClient()
 
   // ── 3. Deduplicate: return existing pass if contact already claimed ────────
-  const { data: existing } = await supabase
+  const { data: existing } = (await supabase
     .from('redemption_passes')
     .select('*')
     .eq('contact_normalized', contactNormalized)
-    .maybeSingle()
+    .maybeSingle()) as { data: RedemptionPass | null; error: unknown }
 
   if (existing) {
     return { alreadyClaimed: true, shortCode: existing.short_code }
@@ -58,11 +59,11 @@ export async function createRedemptionPass(
   let shortCode = ''
   for (let attempt = 0; attempt < 10; attempt++) {
     const candidate = generateShortCode()
-    const { data: collision } = await supabase
+    const { data: collision } = (await supabase
       .from('redemption_passes')
       .select('*')
       .eq('short_code', candidate)
-      .maybeSingle()
+      .maybeSingle()) as { data: RedemptionPass | null; error: unknown }
 
     if (!collision) {
       shortCode = candidate
@@ -97,12 +98,12 @@ export async function createRedemptionPass(
 
   if (insertError) {
     // Race condition: another request inserted with the same contact first
-    if (insertError.code === '23505') {
-      const { data: raceWinner } = await supabase
+    if ((insertError as { code?: string }).code === '23505') {
+      const { data: raceWinner } = (await supabase
         .from('redemption_passes')
         .select('*')
         .eq('contact_normalized', contactNormalized)
-        .maybeSingle()
+        .maybeSingle()) as { data: RedemptionPass | null; error: unknown }
 
       if (raceWinner) {
         return { alreadyClaimed: true, shortCode: raceWinner.short_code }

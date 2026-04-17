@@ -14,7 +14,7 @@ export const ClaimSchema = z.object({
     .max(200)
     .trim(),
 
-  range_name: z.enum(RANGES as [string, ...string[]], {
+  range_name: z.enum(RANGES, {
     errorMap: () => ({ message: 'Please select a valid range' }),
   }),
 

@@ -17,11 +17,11 @@ export type RedeemResult =
 export async function lookupPass(shortCode: string): Promise<LookupResult> {
   const supabase = createServerClient()
 
-  const { data: pass, error } = await supabase
+  const { data: pass, error } = (await supabase
     .from('redemption_passes')
     .select('*')
     .eq('short_code', shortCode.trim().toUpperCase())
-    .maybeSingle()
+    .maybeSingle()) as { data: RedemptionPass | null; error: unknown }
 
   if (error) {
     console.error('Supabase lookup error:', error)
@@ -40,11 +40,11 @@ export async function lookupPass(shortCode: string): Promise<LookupResult> {
 export async function markAsRedeemed(shortCode: string): Promise<RedeemResult> {
   const supabase = createServerClient()
 
-  const { data: pass, error: fetchError } = await supabase
+  const { data: pass, error: fetchError } = (await supabase
     .from('redemption_passes')
     .select('*')
     .eq('short_code', shortCode.trim().toUpperCase())
-    .maybeSingle()
+    .maybeSingle()) as { data: RedemptionPass | null; error: unknown }
 
   if (fetchError) {
     console.error('Supabase fetch error:', fetchError)
