@@ -2,7 +2,7 @@
 
 import { createServerClient } from '@/lib/supabase'
 import { ClaimSchema } from '@/lib/validation'
-import { getValidClaimCodes, EXPIRY_DAYS } from '@/lib/config'
+import { getValidClaimCodes, EXPIRY_DAYS, MAX_VOUCHERS_PER_RANGE } from '@/lib/config'
 import { normalizeContact } from '@/lib/normalize'
 import { generateShortCode } from '@/lib/codes'
 import type { RedemptionPass } from '@/types'
@@ -44,7 +44,17 @@ export async function createRedemptionPass(
   const contactNormalized = normalizeContact(contact)
   const supabase = createServerClient()
 
-  // ── 3. Deduplicate: return existing pass if contact already claimed ────────
+  // ── 3. Check range capacity ────────────────────────────────────────────────
+  const { count: rangeCount } = await supabase
+    .from('redemption_passes')
+    .select('*', { count: 'exact', head: true })
+    .eq('range_name', range_name)
+
+  if (rangeCount !== null && rangeCount >= MAX_VOUCHERS_PER_RANGE) {
+    return { error: 'No more vouchers are available for this range. Please speak to a staff member.' }
+  }
+
+  // ── 4. Deduplicate: return existing pass if contact already claimed ────────
   const { data: existing } = (await supabase
     .from('redemption_passes')
     .select('*')
@@ -55,7 +65,7 @@ export async function createRedemptionPass(
     return { alreadyClaimed: true, shortCode: existing.short_code }
   }
 
-  // ── 4. Generate a unique short code (retry up to 10× on collision) ─────────
+  // ── 5. Generate a unique short code (retry up to 10× on collision) ─────────
   let shortCode = ''
   for (let attempt = 0; attempt < 10; attempt++) {
     const candidate = generateShortCode()
@@ -75,7 +85,7 @@ export async function createRedemptionPass(
     return { error: 'Could not generate a unique code. Please try again.' }
   }
 
-  // ── 5. Insert record ───────────────────────────────────────────────────────
+  // ── 6. Insert record ───────────────────────────────────────────────────────
   const expiresAt = new Date(
     Date.now() + EXPIRY_DAYS * 24 * 60 * 60 * 1000,
   ).toISOString()

@@ -4,10 +4,22 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createRedemptionPass } from '@/actions/claim'
 
-export function ClaimForm({ ranges }: { ranges: string[] }) {
+export function ClaimForm({
+  ranges,
+  rangeVoucherCounts,
+  maxVouchersPerRange,
+}: {
+  ranges: string[]
+  rangeVoucherCounts: Record<string, number>
+  maxVouchersPerRange: number
+}) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [selectedRange, setSelectedRange] = useState('')
+
+  const rangeAtCapacity =
+    !!selectedRange && (rangeVoucherCounts[selectedRange] ?? 0) >= maxVouchersPerRange
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -42,6 +54,7 @@ export function ClaimForm({ ranges }: { ranges: string[] }) {
             name="range_name"
             required
             defaultValue=""
+            onChange={(e) => setSelectedRange(e.target.value)}
             className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-3.5 pr-10 text-slate-900 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 transition"
           >
             <option value="" disabled>Select your range…</option>
@@ -49,6 +62,11 @@ export function ClaimForm({ ranges }: { ranges: string[] }) {
               <option key={r} value={r}>{r}</option>
             ))}
           </select>
+          {rangeAtCapacity && (
+            <p className="mt-1.5 text-xs font-medium text-amber-700">
+              No more vouchers are available for this range.
+            </p>
+          )}
           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
             <svg className="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
@@ -145,7 +163,7 @@ export function ClaimForm({ ranges }: { ranges: string[] }) {
       {/* Submit */}
       <button
         type="submit"
-        disabled={isPending}
+        disabled={isPending || rangeAtCapacity}
         className="w-full rounded-xl bg-brand px-6 py-4 text-base font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {isPending ? 'Generating your voucher…' : 'Claim my voucher →'}

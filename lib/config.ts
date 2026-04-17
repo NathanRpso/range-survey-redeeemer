@@ -22,6 +22,10 @@ export function getValidClaimCodes(): string[] {
     .filter(Boolean)
 }
 
+// ─── Per-range voucher cap ────────────────────────────────────────────────────
+// Set MAX_VOUCHERS_PER_RANGE env var to cap how many vouchers each range can issue.
+export const MAX_VOUCHERS_PER_RANGE = Number(process.env.MAX_VOUCHERS_PER_RANGE ?? '100')
+
 // ─── Expiry ───────────────────────────────────────────────────────────────────
 // Change EXPIRY_DAYS env var to adjust the redemption window (default: 14 days).
 export const EXPIRY_DAYS = Number(process.env.EXPIRY_DAYS ?? '14')
