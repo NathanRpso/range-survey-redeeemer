@@ -46,7 +46,7 @@ export async function createRedemptionPass(
   // ── 3. Deduplicate: return existing pass if contact already claimed ────────
   const { data: existing } = await supabase
     .from('redemption_passes')
-    .select('short_code')
+    .select('*')
     .eq('contact_normalized', contactNormalized)
     .maybeSingle()
 
@@ -60,7 +60,7 @@ export async function createRedemptionPass(
     const candidate = generateShortCode()
     const { data: collision } = await supabase
       .from('redemption_passes')
-      .select('id')
+      .select('*')
       .eq('short_code', candidate)
       .maybeSingle()
 
@@ -100,7 +100,7 @@ export async function createRedemptionPass(
     if (insertError.code === '23505') {
       const { data: raceWinner } = await supabase
         .from('redemption_passes')
-        .select('short_code')
+        .select('*')
         .eq('contact_normalized', contactNormalized)
         .maybeSingle()
 
