@@ -1,12 +1,15 @@
 // ─── Ranges ──────────────────────────────────────────────────────────────────
-// Edit this list to add / remove ranges. The value is stored verbatim in the DB.
-export const RANGES = [
-  'Marina Bay Range',
-  'Orchard Indoor Golf',
-  'Sentosa Range',
-] as const
+// Set RANGES env var as a comma-separated list to update without a code change:
+//   RANGES=Marina Bay Range,Orchard Indoor Golf,Sentosa Range
+// Update the value in Vercel → Environment Variables, then redeploy.
+const RANGES_FALLBACK = 'Marina Bay Range,Orchard Indoor Golf,Sentosa Range'
 
-export type RangeName = (typeof RANGES)[number]
+export function getRanges(): string[] {
+  return (process.env.RANGES ?? RANGES_FALLBACK)
+    .split(',')
+    .map((r) => r.trim())
+    .filter(Boolean)
+}
 
 // ─── Claim codes ─────────────────────────────────────────────────────────────
 // Set CLAIM_CODES env var as a comma-separated list: RANGE26,SPRING26

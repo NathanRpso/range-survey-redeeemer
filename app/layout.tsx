@@ -7,6 +7,7 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Free Bucket of Balls — Redemption Pass',
   description: 'Claim your free bucket of balls after completing the survey.',
+  icons: { icon: '/rapsodo_r_logo_black.jpg' },
 }
 
 export default function RootLayout({

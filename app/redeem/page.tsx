@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { RedeemLookup } from '@/components/RedeemLookup'
 
 export const metadata = {
-  title: 'Staff — Verify Pass',
+  title: 'Staff - Verify Pass',
 }
 
 export default function RedeemPage() {

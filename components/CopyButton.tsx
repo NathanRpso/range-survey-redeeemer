@@ -16,7 +16,6 @@ export function CopyButton({ text, label = 'Copy' }: Props) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // Fallback for older browsers / non-secure contexts
       const el = document.createElement('textarea')
       el.value = text
       document.body.appendChild(el)
@@ -36,7 +35,7 @@ export function CopyButton({ text, label = 'Copy' }: Props) {
     >
       {copied ? (
         <>
-          <svg className="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
           Copied

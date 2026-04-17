@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { RANGES } from './config'
+import { getRanges } from './config'
 
 export const ClaimSchema = z.object({
   full_name: z
@@ -10,13 +10,14 @@ export const ClaimSchema = z.object({
 
   contact: z
     .string()
-    .min(5, 'Please enter a valid email address or mobile number')
-    .max(200)
-    .trim(),
+    .trim()
+    .email('Please enter a valid email address'),
 
-  range_name: z.enum(RANGES, {
-    errorMap: () => ({ message: 'Please select a valid range' }),
-  }),
+  range_name: z
+    .string()
+    .refine((val) => getRanges().includes(val), {
+      message: 'Please select a valid range',
+    }),
 
   // Validated against VALID_CLAIM_CODES at the action level (env-dependent)
   claim_code: z
